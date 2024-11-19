@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+
+{% block page %}Suppliers{% endblock page %}
+
+{% block main %}
+<!-- Display success or error messages -->
+{% if messages %}
+<div class="alert alert-info" role="alert">
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="container-fluid py-2">
+    <div class="row">
+        <div class="col-12">
+            <div class="card my-4">
+                <div class="card-header p-0 bg-gradient-dark shadow-dark border-radius-lg pt-3 pb-3 d-flex justify-content-between align-items-center position-relative mt-n4 mx-3 z-index-2">
+                    <div>
+                        <h6 class="text-white text-capitalize ps-4 mb-0">Suppliers</h6>
+                    </div>
+                    <div class="pe-4">
+                        <!-- Add Supplier Button Trigger Modal -->
+                        <a href="#" data-bs-toggle="modal" data-bs-target="#addSupplierModal" class="btn btn-outline-light btn-lg my-2 text-capitalize">Add Supplier</a>
+                    </div>
+                </div>
+                <div class="card-body px-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Name</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Contact Number</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Address</th>
+                                    <th class="text-secondary opacity-7"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for supplier in suppliers %}
+                                <tr>
+                                    <td>{{ supplier.name }}</td>
+                                    <td>{{ supplier.contact_number }}</td>
+                                    <td>{{ supplier.address }}</td>
+                                    <td>
+                                        <div class="ms-auto text-end">
+                                            <!-- Edit Button -->
+                                            <a href="#" class="btn btn-link text-dark px-3 mb-0 edit-btn"
+                                               data-bs-toggle="modal" data-bs-target="#editSupplierModal"
+                                               data-id="{{ supplier.id }}"
+                                               data-name="{{ supplier.name }}"
+                                               data-contact_number="{{ supplier.contact_number }}"
+                                               data-address="{{ supplier.address }}">
+                                                <i class="material-symbols-rounded text-sm me-2">edit</i>Edit
+                                            </a>
+                                            <!-- Delete Button -->
+                                            <a href="{% url 'delete_supplier' supplier.id %}" class="btn btn-link text-danger text-gradient px-3 mb-0">
+                                                <i class="material-symbols-rounded text-sm me-2">delete</i>Delete
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Adding Supplier -->
+<div class="modal fade" id="addSupplierModal" tabindex="-1" aria-labelledby="addSupplierModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSupplierModalLabel">Add Supplier</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'add_supplier' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="p-2 form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="contact_number" class="form-label">Contact Number</label>
+                        <input type="text" class="p-2 form-control" id="contact_number" name="contact_number" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="address" class="form-label">Address</label>
+                        <input type="text" class="p-2 form-control" id="address" name="address">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Supplier</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Editing Supplier -->
+<div class="modal fade" id="editSupplierModal" tabindex="-1" aria-labelledby="editSupplierModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editSupplierModalLabel">Edit Supplier</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="" id="editSupplierForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="editName" class="form-label">Name</label>
+                        <input type="text" class="p-2 form-control" id="editName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editContactNumber" class="form-label">Contact Number</label>
+                        <input type="text" class="p-2 form-control" id="editContactNumber" name="contact_number" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editAddress" class="form-label">Address</label>
+                        <input type="text" class="p-2 form-control" id="editAddress" name="address">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update Supplier</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const editButtons = document.querySelectorAll('.edit-btn');
+
+    editButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const supplierId = button.getAttribute('data-id');
+            const supplierName = button.getAttribute('data-name');
+            const supplierContactNumber = button.getAttribute('data-contact_number');
+            const supplierAddress = button.getAttribute('data-address');
+
+            // Update the modal form action dynamically
+            document.querySelector('#editSupplierForm').action = `/edit-supplier/${supplierId}/`;
+
+            // Populate the form fields with the selected supplier's data
+            document.querySelector('#editName').value = supplierName;
+            document.querySelector('#editContactNumber').value = supplierContactNumber;
+            document.querySelector('#editAddress').value = supplierAddress;
+        });
+    });
+</script>
+{% endblock %}

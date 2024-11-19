@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block page %}Report{% endblock page %}
+
+{% block main %}
+<!-- Display success or error messages -->
+{% if messages %}
+<div class="alert alert-info" role="alert">
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="container-fluid py-2">
+    <div class="row">
+        <div class="col-12">
+            <div class="card my-4">
+                <div class="card-header p-0 bg-gradient-dark shadow-dark border-radius-lg pt-3 pb-3 d-flex justify-content-between align-items-center position-relative mt-n4 mx-3 z-index-2">
+                    <div>
+                        <h6 class="text-white text-capitalize ps-4 mb-0">Reports</h6>
+                    </div>
+                    <div class="pe-4">
+                        <!-- Add Report Button Trigger Modal -->
+                        <button type="button" class="btn btn-outline-light btn-lg my-2 text-capitalize" data-bs-toggle="modal" data-bs-target="#generateReportModal">
+                            Generate Report
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body px-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Station</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Category</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Opening Stock</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Closing Stock</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Sales Total</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Profit</th>
+                                    <th class="text-secondary opacity-7"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for report in reports %}
+                                <tr>
+                                    <td>{{ report.station.name }}</td>
+                                    <td>{{ report.category.name }}</td>
+                                    <td class="text-center">{{ report.opening_stock }}</td>
+                                    <td class="text-center">{{ report.closing_stock }}</td>
+                                    <td class="text-center">{{ report.sales_total }}</td>
+                                    <td class="text-center">{{ report.profit }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Generating report -->
+<div class="modal fade" id="generateReportModal" tabindex="-1" aria-labelledby="generateReportModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="generateReportModalLabel">Generate Report</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'generate_report' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="station" class="form-label">Station</label>
+                        <select class="p-2 form-control" id="station" name="station" required>
+                            <option>Select One</option>
+                            {% for station in stations %}
+                                <option value="{{ station.id }}">{{ station.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select class="p-2 form-control" id="category" name="category" required>
+                            <option>Select One</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Generate Report</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock main %}

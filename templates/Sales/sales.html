@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block page %}Sales{% endblock page %}
+
+{% block main %}
+<!-- Display success or error messages -->
+{% if messages %}
+<div class="alert alert-info" role="alert">
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="container-fluid py-2">
+    <div class="row">
+        <div class="col-12">
+            <div class="card my-4">
+                <div class="card-header p-0 bg-gradient-dark shadow-dark border-radius-lg pt-3 pb-3 d-flex justify-content-between align-items-center position-relative mt-n4 mx-3 z-index-2">
+                    <div>
+                        <h6 class="text-white text-capitalize ps-4 mb-0">Sales</h6>
+                    </div>
+                    <div class="pe-4">
+                        <!-- Add Sale Button Trigger Modal -->
+                        <a class="btn btn-outline-light btn-lg my-2 text-capitalize" href={% url 'add_sale' %}>
+                            Add Sale
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body px-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Station</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Total Price</th>
+                                    <th class="text-secondary opacity-7"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for sale in sales %}
+                                <tr>
+                                    <td>{{ sale.station.name }}</td>
+                                    <td>{{ sale.supplier.name }}</td>
+                                    <td>{{ sale.total_cost }}</td>
+                                    <td>{{ sale.sale_date }}</td>
+                                    <td>
+                                        <div class="ms-auto text-end">
+                                            <!-- Edit Sale Button Trigger Modal -->
+                                            
+                                            <a class="btn btn-link text-danger text-gradient px-3 mb-0" href="{% url 'sale_receipt' sale.id %}">
+                                                <i class="material-symbols-rounded text-sm me-2">print</i>Receipt
+                                            </a>
+                                            <a class="btn btn-link text-danger text-gradient px-3 mb-0" href="{% url 'edit_sale' sale.id %}">
+                                                <i class="material-symbols-rounded text-sm me-2">edit</i>Edit
+                                            </a>
+                                            <a class="btn btn-link text-danger text-gradient px-3 mb-0" href="{% url 'delete_sale' sale.id %}">
+                                                <i class="material-symbols-rounded text-sm me-2">delete</i>Delete
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Adding Sale -->
+<div class="modal fade" id="addSaleModal" tabindex="-1" aria-labelledby="addSaleModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addSaleModalLabel">Add Sale</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'add_sale' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="station" class="form-label">Station</label>
+                        <select class="p-2 form-control" id="station" name="station" required>
+                            <option>Select one</option>
+                            {% for station in stations %}
+                                <option value="{{ station.id }}">{{ station.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select class="p-2 form-control" id="category" name="category" required>
+                            <option>Select one</option>
+                            {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="quantity_sold" class="form-label">Quantity Sold (Liters)</label>
+                        <input type="number" class="p-2 form-control" id="quantity_sold" name="quantity_sold" required step="0.01">
+                    </div>
+                    <div class="mb-3">
+                        <label for="price_per_liter" class="form-label">Price per Liter</label>
+                        <input type="number" class="p-2 form-control" id="prices" name="prices[]" required step="0.01" readonly>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Add Sale</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const categorySelect = document.querySelector('#category');
+        const priceInput = document.querySelector('#price_per_liter');
+
+        categorySelect.addEventListener('change', () => {
+            const categoryId = categorySelect.value;
+
+            if (categoryId) {
+                fetch(`/get-category-price/${categoryId}/`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.price_per_liter) {
+                            priceInput.value = data.price_per_liter; // Set the price
+                        } else {
+                            priceInput.value = ''; // Clear the input if no price is found
+                            alert('Price not available for the selected category.');
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error fetching category price:', error);
+                        alert('Unable to fetch price. Please try again later.');
+                    });
+            } else {
+                priceInput.value = ''; // Clear the input if no category is selected
+            }
+        });
+    });
+</script>
+
+
+<script>
+    const editCategoryField = document.querySelector('#edit_category');
+    const editPriceField = document.querySelector('#edit_price_per_liter');
+
+    editCategoryField.addEventListener('change', () => {
+        const selectedCategoryId = editCategoryField.value;
+
+        // Fetch the price for the selected category using an AJAX call or a preloaded map
+        const categoryPrices = JSON.parse('{{ category_prices_json|safe }}'); // Preloaded map from the backend
+        const selectedPrice = categoryPrices[selectedCategoryId];
+
+        if (selectedPrice) {
+            editPriceField.value = selectedPrice;
+        } else {
+            editPriceField.value = ''; // Clear the field if no valid category is selected
+        }
+    });
+</script>
+
+<script>
+    const editButtons = document.querySelectorAll('.edit-sale-btn');
+editButtons.forEach(button => {
+    button.addEventListener('click', () => {
+        const saleId = button.getAttribute('data-id');
+        const stationId = button.getAttribute('data-station');
+        const categoryId = button.getAttribute('data-category');
+        const quantitySold = button.getAttribute('data-quantity');
+        const pricePerLiter = button.getAttribute('data-price');
+
+        // Update the action URL for the form
+        document.querySelector('#editSaleForm').action = `/edit-sale/${saleId}/`;
+
+        // Preload form fields with sale details
+        document.querySelector('#edit_station').value = stationId;
+        document.querySelector('#edit_category').value = categoryId;
+        document.querySelector('#edit_quantity_sold').value = quantitySold;
+
+        // Fetch the price dynamically
+        const categoryPrices = JSON.parse('{{ category_prices_json|safe }}');
+        const selectedPrice = categoryPrices[categoryId] || pricePerLiter;
+
+        // Preload the price field
+        document.querySelector('#edit_price_per_liter').value = selectedPrice;
+    });
+});
+
+
+</script>
+
+{% endblock %}

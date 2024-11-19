@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+
+{% block page %}Edit Sale{% endblock page %}
+
+{% block main %}
+<!-- Display success or error messages -->
+{% if messages %}
+<div class="alert alert-info" role="alert">
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="container-fluid py-2">
+    <div class="row">
+        <div class="col-12">
+            <div class="card my-4">
+                <div class="card-header p-0 bg-gradient-dark shadow-dark border-radius-lg pt-3 pb-3 d-flex justify-content-between align-items-center position-relative mt-n4 mx-3 z-index-2">
+                    <h6 class="text-white text-capitalize ps-4 mb-0">Edit Sale</h6>
+                </div>
+                <div class="card-body px-0 pb-2">
+                    <form method="POST" action="{% url 'edit_sale' sale.id %}">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="station" class="form-label">Station</label>
+                            <select class="form-control" id="station" name="station" required>
+                                <option value="">Select Station</option>
+                                {% for station in stations %}
+                                    <option value="{{ station.id }}" {% if station.id == sale.station.id %}selected{% endif %}>{{ station.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="supplier" class="form-label">Supplier</label>
+                            <select class="form-control" id="supplier" name="supplier" required>
+                                <option value="">Select Supplier</option>
+                                {% for supplier in suppliers %}
+                                    <option value="{{ supplier.id }}" {% if supplier.id == sale.supplier.id %}selected{% endif %}>{{ supplier.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div id="product-list">
+                            {% for item in sale.saleitems.all %}
+                            <div class="product-row row g-3">
+                                <div class="col-md-4">
+                                    <label for="category" class="form-label">Category</label>
+                                    <select class="form-control category" name="categories" required>
+                                        <option value="">Select Category</option>
+                                        {% for category in categories %}
+                                        <option value="{{ category.id }}" {% if category.id == item.category.id %}selected{% endif %}>
+                                            {{ category.name }}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="quantity" class="form-label">Quantity (Liters)</label>
+                                    <input type="number" class="form-control" name="quantities" value="{{ item.quantity_sold }}" required step="0.01">
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="price" class="form-label">Price per Liter</label>
+                                    <input type="number" class="form-control price_per_liter" name="prices" value="{{ item.price_per_liter }}" required step="0.01" readonly>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        
+                        <!-- Add dynamic rows when no sale items exist -->
+                        {% if sale.saleitems.count == 0 %}
+                        <p>No products found for this sale. Add products below:</p>
+                        <button type="button" class="btn btn-success" id="add-product">Add Product</button>
+                        {% endif %}
+                        
+
+                        <!-- Add Another Product Button -->
+                        <button type="button" class="btn btn-success mt-3" id="add-product">Add Another Product</button>
+
+                        <button type="submit" class="btn btn-primary mt-3">Update Sale</button>
+
+                        
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Handle the initial price setting for each product row
+        const categorySelects = document.querySelectorAll('.category');
+        const priceInputs = document.querySelectorAll('.price_per_liter');
+
+        categorySelects.forEach((categorySelect, index) => {
+            categorySelect.addEventListener('change', () => {
+                const categoryId = categorySelect.value;
+                const priceInput = priceInputs[index];
+
+                if (categoryId) {
+                    fetch(`/get-category-price/${categoryId}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.price_per_liter) {
+                                priceInput.value = data.price_per_liter; // Set the price
+                            } else {
+                                priceInput.value = ''; // Clear the input if no price is found
+                                alert('Price not available for the selected category.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching category price:', error);
+                            alert('Unable to fetch price. Please try again later.');
+                        });
+                } else {
+                    priceInput.value = ''; // Clear the input if no category is selected
+                }
+            });
+        });
+
+        // Handle dynamically added product rows
+        document.getElementById('add-product').addEventListener('click', () => {
+            const productList = document.getElementById('product-list');
+            const newRow = document.createElement('div');
+            newRow.classList.add('product-row', 'row', 'g-3', 'mt-2');
+            newRow.innerHTML = `
+                <div class="col-md-4">
+                    <select class="form-control category" name="categories[]" required>
+                        <option>Select One</option>
+                        {% for category in categories %}
+                            <option value="{{ category.id }}">{{ category.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <input type="number" class="form-control" name="quantities[]" required step="0.01">
+                </div>
+                <div class="col-md-4">
+                    <input type="number" class="form-control price_per_liter" name="prices[]" required step="0.01" readonly>
+                </div>
+            `;
+            productList.appendChild(newRow);
+
+            // Add event listener for the new row
+            const newCategorySelect = newRow.querySelector('.category');
+            const newPriceInput = newRow.querySelector('.price_per_liter');
+            
+            newCategorySelect.addEventListener('change', () => {
+                const categoryId = newCategorySelect.value;
+
+                if (categoryId) {
+                    fetch(`/get-category-price/${categoryId}/`)
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.price_per_liter) {
+                                newPriceInput.value = data.price_per_liter; // Set the price
+                            } else {
+                                newPriceInput.value = ''; // Clear the input if no price is found
+                                alert('Price not available for the selected category.');
+                            }
+                        })
+                        .catch(error => {
+                            console.error('Error fetching category price:', error);
+                            alert('Unable to fetch price. Please try again later.');
+                        });
+                } else {
+                    newPriceInput.value = ''; // Clear the input if no category is selected
+                }
+            });
+        });
+    });
+</script>
+
+{% endblock %}

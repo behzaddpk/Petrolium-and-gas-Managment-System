@@ -56,7 +56,7 @@ ROOT_URLCONF = 'petrolium.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [BASE_DIR / 'app' / 'templates'],
+        'DIRS': [BASE_DIR  / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -129,7 +129,9 @@ STATICFILES_DIRS = [
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 # Default primary key field type
 
-LOGIN_REDIRECT_URL = '/'
+LOGIN_URL = '/sign-in/'  # Redirect to the sign-in page if not authenticated
+LOGIN_REDIRECT_URL = 'dashboard/'  # After login, redirect to the dashboard
+LOGOUT_REDIRECT_URL = 'sign-in/' 
 
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 

@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block page %}Consumer{% endblock page %}
+
+{% block main %}
+  <!-- End Navbar -->
+   <!-- Display success or error messages -->
+{% if messages %}
+<div class="alert alert-info" role="alert">
+  {% for message in messages %}
+    <p>{{ message }}</p>
+  {% endfor %}
+</div>
+{% endif %}
+
+  <div class="container-fluid py-2">
+    <div class="row">
+      <div class="col-12">
+        <div class="card my-4">
+          <div class="card-header p-0 bg-gradient-dark shadow-dark border-radius-lg pt-3 pb-3 d-flex justify-content-between align-items-center position-relative mt-n4 mx-3 z-index-2">
+            <div>
+              <h6 class="text-white text-capitalize ps-4 mb-0">Station table</h6>
+            </div>
+            <div class="pe-4">
+              <!-- Add Station Button Trigger Modal -->
+              <button type="button" class="btn btn-outline-light btn-lg my-2 text-capitalize" data-bs-toggle="modal" data-bs-target="#addStationModal">
+                Add Station
+              </button>
+            </div>
+          </div>          
+          <div class="card-body px-0 pb-2">
+            <div class="table-responsive p-0">
+              <table class="table align-items-center mb-0">
+                <thead>
+                  <tr>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Name</th>
+                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Contact Number</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Address</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Staus</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Capacity</th>
+                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Active</th>
+                    <th class="text-secondary opacity-7"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {% for station in stations %}
+                    <tr>
+                        <td>
+                            <h6 class="mb-0 text-sm">{{ station.name }}</h6>
+                        </td>
+                        <td>
+                            <p class="text-xs font-weight-bold mb-0">{{ station.contact_number }}</p>
+                        </td>
+                        <td>
+                            <p class="text-xs font-weight-bold mb-0">{{ station.location }}</p>
+                        </td>
+                        <td class="align-middle text-center">
+                            <span class="text-secondary text-xs font-weight-bold">{{ station.capacity }}</span>
+                        </td>
+                        <td class="align-middle text-center">
+                          <span class="text-secondary text-xs font-weight-bold">
+                              {% comment %} {{ station.is_active }} {% endcomment %}
+                              {% if station.is_active %}
+                                  <span class="badge badge-sm bg-gradient-success">Active</span>
+                              {% else %}
+                                  <span class="badge badge-sm bg-gradient-secondary">InActive</span>
+                              {% endif %}
+                          </span>
+                      </td>
+                      
+                        <td>
+                            <div class="ms-auto text-end">
+                              <a class="btn btn-link text-danger text-gradient px-3 mb-0" href="{% url 'delete_station' station.id %}"><i class="material-symbols-rounded text-sm me-2">delete</i>Delete</a>
+                                <a 
+                                    class="btn btn-link text-dark px-3 mb-0 edit-btn" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#editStationModal"
+                                    data-id="{{ station.id }}" 
+                                    data-name="{{ station.name }}"
+                                    data-contact="{{ station.contact_number }}"
+                                    data-address="{{ station.location }}"
+                                    data-capacity="{{ station.capacity }}">
+                                    <i class="material-symbols-rounded text-sm me-2">edit</i>Edit
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal for Add Station -->
+  <div class="modal fade" id="addStationModal" tabindex="-1" aria-labelledby="addStationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="addStationModalLabel">Add Station</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <form method='POST' action="{% url 'add_station' %}">
+            {% csrf_token %}
+            <!-- Name and Address Fields in a Single Row -->
+            <div class="row mb-3">
+              <div class="col-sm-12 col-md-6">
+                <label for="name" class="form-label">Name</label>
+                <input type="text" class="form-control p-2" id="name" name="name" placeholder="Enter your name" required>
+              </div>
+              <div class="col-sm-12 col-md-6">
+                <label for="address" class="form-label">Address</label>
+                <input type="text" class="form-control p-2" id="address" name="address" placeholder="Enter your address" required>
+              </div>
+            </div>
+
+            <!-- Contact Number and Capacity Fields in a Single Row -->
+            <div class="row mb-3">
+              <div class="col-sm-12 col-md-6">
+                <label for="contact" class="form-label">Contact Number</label>
+                <input type="tel" class="form-control p-2" id="contact" name="contact" placeholder="Enter your contact number" required>
+              </div>
+              <div class="col-sm-12 col-md-6">
+                <label for="capacity" class="form-label">Capacity</label>
+                <input type="number" class="form-control p-2" id="capacity" name="capacity" placeholder="Enter the capacity" required>
+              </div>
+            </div>
+
+            <div class="form-check form-switch d-flex align-items-center mb-3">
+              <input class="form-check-input" type="checkbox" id="is_active" name="is_active" checked>
+              <label class="form-check-label mb-0 ms-3" for="rememberMe">Active</label>
+            </div>
+
+            <!-- Submit Button -->
+            <div class="row">
+              <div class="text-center">
+                <button type="submit" class="btn btn-primary w-100">Submit</button>
+              </div>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal fade" id="editStationModal" tabindex="-1" aria-labelledby="editStationModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editStationModalLabel">Edit Station</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+              <form method="POST" action="" id="editStationForm">
+                {% csrf_token %}
+                <!-- Station Name and Address -->
+                <div class="row mb-3">
+                    <div class="col-sm-12 col-md-6">
+                        <label for="editName" class="form-label">Name</label>
+                        <input type="text" class="form-control p-2" id="editName" name="name" value="{{ station.name }}" required>
+                    </div>
+                    <div class="col-sm-12 col-md-6">
+                        <label for="editAddress" class="form-label">Address</label>
+                        <input type="text" class="form-control p-2" id="editAddress" name="address" value="{{ station.location }}" required>
+                    </div>
+                </div>
+            
+                <!-- Contact and Capacity -->
+                <div class="row mb-3">
+                    <div class="col-sm-12 col-md-6">
+                        <label for="editContact" class="form-label">Contact Number</label>
+                        <input type="tel" class="form-control p-2" id="editContact" name="contact" value="{{ station.contact_number }}" required>
+                    </div>
+                    <div class="col-sm-12 col-md-6">
+                        <label for="editCapacity" class="form-label">Capacity</label>
+                        <input type="number" class="form-control p-2" id="editCapacity" name="capacity" value="{{ station.capacity }}" required>
+                    </div>
+                </div>
+            
+                <div class="form-check form-switch d-flex align-items-center mb-3">
+                  <input class="form-check-input" type="checkbox" id="editIsActive" name="is_active">
+                  <label class="form-check-label mb-0 ms-3" for="editIsActive">Active</label>
+              </div>
+              
+              
+            
+                <!-- Submit Button -->
+                <div class="row">
+                    <div class="text-center">
+                        <button type="submit" class="btn btn-primary w-100">Update</button>
+                    </div>
+                </div>
+            </form>
+            
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+  document.querySelectorAll('.edit-btn').forEach(button => {
+    button.addEventListener('click', function () {
+        // Get station details from data attributes
+        const stationId = button.getAttribute('data-id');
+        const stationName = button.getAttribute('data-name');
+        const stationContact = button.getAttribute('data-contact');
+        const stationAddress = button.getAttribute('data-address');
+        const stationCapacity = button.getAttribute('data-capacity');
+        const stationIsActive = button.getAttribute('data-is_active');  // Ensure it's a boolean value
+
+        // Populate modal fields
+        document.getElementById('editName').value = stationName;
+        document.getElementById('editContact').value = stationContact;
+        document.getElementById('editAddress').value = stationAddress;
+        document.getElementById('editCapacity').value = stationCapacity;
+        document.getElementById('editIsActive').checked = stationIsActive;
+
+        // Update form action dynamically
+        const editForm = document.getElementById('editStationForm');
+        editForm.action = `/edit-station/${stationId}/`; // Set form action dynamically
+    });
+});
+
+
+
+  </script>
+  
+
+
+
+{% endblock main %}

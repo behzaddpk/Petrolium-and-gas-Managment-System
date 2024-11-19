@@ -1,0 +1,178 @@
+{% extends "base.html" %}
+
+{% block page %}products{% endblock page %}
+
+{% block main %}
+<!-- Display success or error messages -->
+{% if messages %}
+<div class="alert alert-info" role="alert">
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="container-fluid py-2">
+    <div class="row">
+        <div class="col-12">
+            <div class="card my-4">
+                <div class="card-header p-0 bg-gradient-dark shadow-dark border-radius-lg pt-3 pb-3 d-flex justify-content-between align-items-center position-relative mt-n4 mx-3 z-index-2">
+                    <div>
+                        <h6 class="text-white text-capitalize ps-4 mb-0">products</h6>
+                    </div>
+                    <div class="pe-4">
+                        <!-- Add FuelType Button Trigger Modal -->
+                        <button type="button" class="btn btn-outline-light btn-lg my-2 text-capitalize" data-bs-toggle="modal" data-bs-target="#addProductModal">
+                            Add product
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body px-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Name</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Price per Liter</th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Unit</th>
+                                    <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Description</th>
+                                    <th class="text-secondary opacity-7"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for product in products %}
+                                <tr>
+                                    <td>
+                                        <h6 class="mb-0 text-sm">{{ product.name }}</h6>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ product.price_per_liter }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ product.unit }}</p>
+                                    </td>
+                                    <td>
+                                        <p class="text-xs font-weight-bold mb-0">{{ product.description }}</p>
+                                    </td>
+                                    <td>
+                                        <div class="ms-auto text-end">
+                                            <a 
+                                                class="btn btn-link text-dark px-3 mb-0 edit-btn" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#editProductModal"
+                                                data-id="{{ product.id }}" 
+                                                data-name="{{ product.name }}"
+                                                data-price="{{ product.price_per_liter }}"
+                                                data-unit="{{ product.unit }}"
+                                                data-description="{{ product.description }}">
+                                                <i class="material-symbols-rounded text-sm me-2">edit</i>Edit
+                                            </a>
+                                            <a class="btn btn-link text-danger text-gradient px-3 mb-0" href="{% url 'delete_product' product.id %}">
+                                                <i class="material-symbols-rounded text-sm me-2">delete</i>Delete
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Adding product -->
+<div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addProductModalLabel">Add product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="{% url 'add_product' %}">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="p-2 form-control" id="name" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="price_per_liter" class="form-label">Price per Liter</label>
+                        <input type="number" step="0.01" class="p-2 form-control" id="price_per_liter" name="price_per_liter" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="unit" class="form-label">Unit</label>
+                        <input type="text" class="p-2 form-control" id="unit" name="unit" value="liters" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="p-2 form-control" id="description" name="description"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add product</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal for Editing product -->
+<div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editProductModalLabel">Edit product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form method="POST" action="" id="editProductForm">
+                    {% csrf_token %}
+                    <div class="mb-3">
+                        <label for="editName" class="form-label">Name</label>
+                        <input type="text" class="p-2 form-control" id="editName" name="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editPricePerLiter" class="form-label">Price per Liter</label>
+                        <input type="number" step="0.01" class="p-2 form-control" id="editPricePerLiter" name="price_per_liter" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editUnit" class="form-label">Unit</label>
+                        <input type="text" class="p-2 form-control" id="editUnit" name="unit" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="editDescription" class="form-label">Description</label>
+                        <textarea class="p-2 form-control" id="editDescription" name="description"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Update product</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Script to dynamically populate the edit modal with data
+    const editButtons = document.querySelectorAll('.edit-btn');
+
+    editButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const productId = button.getAttribute('data-id');
+            const productName = button.getAttribute('data-name');
+            const productPrice = button.getAttribute('data-price');
+            const productUnit = button.getAttribute('data-unit');
+            const productDescription = button.getAttribute('data-description');
+
+            // Update the modal form action dynamically
+            document.querySelector('#editProductForm').action = `/edit-product/${productId}/`;
+
+            // Populate the form fields with the selected product's data
+            document.querySelector('#editName').value = productName;
+            document.querySelector('#editPricePerLiter').value = productPrice;
+            document.querySelector('#editUnit').value = productUnit;
+            document.querySelector('#editDescription').value = productDescription;
+        });
+    });
+</script>
+
+{% endblock main %}

@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+
+{% block page %}Purchases{% endblock page %}
+
+{% block main %}
+<!-- Display success or error messages -->
+{% if messages %}
+<div class="alert alert-info" role="alert">
+    {% for message in messages %}
+        <p>{{ message }}</p>
+    {% endfor %}
+</div>
+{% endif %}
+
+<div class="container-fluid py-2">
+    <div class="row">
+        <div class="col-12">
+            <div class="card my-4">
+                <div class="card-header p-0 bg-gradient-dark shadow-dark border-radius-lg pt-3 pb-3 d-flex justify-content-between align-items-center position-relative mt-n4 mx-3 z-index-2">
+                    <div>
+                        <h6 class="text-white text-capitalize ps-4 mb-0">Purchases</h6>
+                    </div>
+                    <div class="pe-4">
+                        <!-- Add Purchase Button Trigger Modal -->
+                        <a type="button" class="btn btn-outline-light btn-lg my-2 text-capitalize" href='{% url 'add_purchase' %}'>
+                            Add Purchase
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body px-0 pb-2">
+                    <div class="table-responsive p-0">
+                        <table class="table align-items-center mb-0">
+                            <thead>
+                                <tr>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Station</th>
+                                    {% comment %} <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Category</th> {% endcomment %}
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2">Total Cost</th>
+                                    <th class="text-secondary opacity-7"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for purchase in purchases %}
+                                <tr>
+                                    <td>{{ purchase.station.name }}</td>
+                                    {% comment %} <td>{{ item.category.name }}</td> {% endcomment %}
+                                    <td>{{ purchase.total_cost }}</td>
+                                    <td>
+                                        <div class="ms-auto text-end">
+                                            
+                                             <a 
+                                             class="btn btn-link text-danger text-gradient px-3 mb-0" href="{% url 'purchase_receipt' purchase.id %}">
+                                             <i class="fas fa-print text-sm me-2"></i>Receipt
+                                        </a> 
+                                             <a 
+                                             class="btn btn-link text-danger text-gradient px-3 mb-0" href="{% url 'edit_purchase' purchase.id %}">
+                                                <i class="material-symbols-rounded text-sm me-2">edit</i>Edit
+                                        </a> 
+                                            <a class="btn btn-link text-danger text-gradient px-3 mb-0" href="{% url 'delete_purchase' purchase.id %}">
+                                                <i class="material-symbols-rounded text-sm me-2">delete</i>Delete
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+{% endblock main %}

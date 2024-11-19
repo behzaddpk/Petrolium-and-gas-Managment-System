@@ -2850,7 +2850,7 @@ progress {
 .form-control {
   display: block;
   width: 100%;
-  padding: 0.5rem 0;
+  padding: 10px;
   font-size: 0.875rem;
   font-weight: 400;
   line-height: 1.5rem;
@@ -3478,6 +3478,7 @@ textarea.form-control-lg {
 .input-group>.form-select:focus,
 .input-group>.form-floating:focus-within {
   z-index: 5;
+  border: 1px solid black;
 }
 
 .input-group .btn {
@@ -3487,6 +3488,8 @@ textarea.form-control-lg {
 
 .input-group .btn:focus {
   z-index: 5;
+  border: 1px solid black;
+
 }
 
 .input-group-text {

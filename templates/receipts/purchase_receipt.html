@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load static %}
+{% block page %}Purchase Receipt{% endblock page %}
+
+{% block main %}
+<div class="card">
+    <div class="card-body">
+        <div class="container mb-5 mt-3">
+            <div class="row d-flex align-items-baseline">
+                <div class="col-xl-9">
+                    <p style="color: #7e8d9f; font-size: 20px;">Invoice >> <strong>ID: #{{ purchase.id }}</strong></p>
+                </div>
+                <div class="col-xl-3 float-end">
+                    <!-- Updated class to 'btn-print' for targeting the print functionality -->
+                    <a class="btn btn-light text-capitalize border-0 btn-print" data-mdb-ripple-color="dark">
+                        <i class="fas fa-print text-primary"></i> Print</a>
+                </div>
+                <hr>
+            </div>
+
+            <div class="container">
+                <div class="col-md-12">
+                    <div class="text-center">
+                        <img src="{% static 'assets/img/logo.png' %}" class="img-fluid" style="max-height: 120px;"/>
+                        <p class="pt-0">Company Name</p> <!-- Replace with your company name -->
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-xl-8">
+                        <ul class="list-unstyled ">
+                            <li class="text-muted">To: <span style="color:#5d9fc5 ;">{{ purchase.supplier.name }}</span></li>
+                            <li class="text-muted">{{ purchase.supplier.address }}</li>
+                            <li class="text-muted"><i class="fas fa-phone"></i> {{ purchase.supplier.contact_number }}</li>
+                        </ul>
+                    </div>
+                    <div class="col-xl-4">
+                        <p class="text-muted">Invoice</p>
+                        <ul class="list-unstyled">
+                            <li class="text-muted "><i class="fas fa-circle" bg-gradient-dark></i> <span class="fw-bold">ID:</span>#{{ purchase.id }}</li>
+                            <li class="text-muted "><i class="fas fa-circle" bg-gradient-dark></i> <span class="fw-bold">Creation Date: </span>{{ purchase.purchase_date|date:"M d, Y" }}</li>
+                            <li class="text-muted "><i class="fas fa-circle" bg-gradient-dark></i> <span class="me-1 fw-bold">Status:</span><span class="badge bg-success text-white fw-bold">{{ purchase.status }}</span></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="row my-2 mx-1 justify-content-center">
+                    <table class="table table-striped table-borderless">
+                        <thead style="color:white ;" class="text-white bg-gradient-dark">
+                            <tr>
+                                <th style="color:white ;" scope="col">#</th>
+                                <th style="color:white ;" scope="col">Description</th>
+                                <th style="color:white ;" scope="col">Qty</th>
+                                <th style="color:white ;" scope="col">Unit Price</th>
+                                <th style="color:white ;" scope="col">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for item in purchase_items %}
+                            <tr>
+                                <th scope="row">{{ forloop.counter }}</th>
+                                <td>{{ item.category }}</td> <!-- Assuming 'name' is the field for description -->
+                                <td>{{ item.quantity_purchased }}</td>
+                                <td>${{ item.price_per_liter }}</td>
+                                <td>${{ item.total_cost }}</td> <!-- This assumes the total price is stored in 'total_price' -->
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center">No items found</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="row">
+                    <div class="col-xl-8">
+                        <p class="ms-3">Add additional notes and payment information</p>
+                    </div>
+                    <div class="col-xl-3">
+                        <p class="text-black float-start"><span class="text-black me-3">Total Amount</span><span style="font-size: 25px;">${{ purchase.total_cost }}</span></p>
+                    </div>
+                </div>
+                <hr>
+                <div class="row">
+                    <div class="col-xl-10">
+                        <p>Thank you for your purchase</p>
+                    </div>
+                    {% comment %} <div class="col-xl-2">
+                        <button type="button" class="btn btn-primary text-capitalize" style="background-color:#60bdf3 ;">Pay Now</button>
+                    </div> {% endcomment %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // This would trigger the browser's print dialog
+    document.querySelector('.btn-print').addEventListener('click', function() {
+        window.print();
+    });
+</script>
+
+{% endblock %}
